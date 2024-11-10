@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start File Client</title>
+</head>
+<body>
+    <h1>Start File Client</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="receiver_ip">Enter the sender's IP address:</label><br>
+        <input type="text" id="receiver_ip" name="receiver_ip" required><br><br>
+        <button type="submit">Start Client</button>
+    </form>
+</body>
+</html>
