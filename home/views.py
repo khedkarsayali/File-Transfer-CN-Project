@@ -15,7 +15,7 @@ def start_server(request):
             return HttpResponse("File not found. Please provide a valid file path.")
         
         # Start the server thread as a daemon
-        server_thread = threading.Thread(target=run_server, args=(file_path,), daemon=True)
+        server_thread = threading.Thread(target=run_server, args=(file_path, server_ip), daemon=True)
         server_thread.start()
         return HttpResponse(f"Server started and ready to send the file. Share this IP with the client: {server_ip}")
     
@@ -34,17 +34,14 @@ def start_client(request):
     return render(request, 'start_client.html')
 
 # Define the server logic
-def run_server(file_path):
+def run_server(file_path, server_ip):
     try:
         # Bind the server to the device's IP and a port
-        host = socket.gethostbyname(socket.gethostname())  # Automatically gets the device's local IP
         port = 12345
-        
-        # Initialize socket
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind((host, port))
+            s.bind((server_ip, port))
             s.listen(1)
-            print(f"Server listening on {host}:{port}")
+            print(f"Server listening on {server_ip}:{port}")
             
             conn, addr = s.accept()
             print(f"Connected to receiver: {addr}")
@@ -67,7 +64,7 @@ def run_server(file_path):
     except Exception as e:
         print(f"Error in server: {e}")
 
-# Define the client logic
+# Define the client logic (modified based on your provided code)
 def run_client(receiver_ip):
     try:
         port = 12345
@@ -80,16 +77,19 @@ def run_client(receiver_ip):
             file_name, file_size = metadata.split("|")
             file_size = int(file_size)
             
-            # Save the file
-            with open(file_name, 'wb') as f:
-                received = 0
-                while received < file_size:
+            # Ask user where to save the received file
+            save_path = input(f"Enter the path where you'd like to save the file (default: {file_name}): ")
+            if not save_path:
+                save_path = file_name
+
+            # Receive and write the file in chunks
+            with open(save_path, 'wb') as f:
+                while True:
                     data = s.recv(1024)
                     if not data:
                         break
                     f.write(data)
-                    received += len(data)
             
-            print(f"File '{file_name}' received successfully.")
+            print(f"File received and saved as {save_path}")
     except Exception as e:
         print(f"Error in client: {e}")
