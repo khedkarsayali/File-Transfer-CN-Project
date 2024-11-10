@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start File Server</title>
+</head>
+<body>
+    <h1>Start File Server</h1>
+    <p>Your server's IP address is: <strong>{{ server_ip }}</strong></p>
+    <form method="post">
+        {% csrf_token %}
+        <label for="file_path">Enter the path of the file to send:</label><br>
+        <input type="text" id="file_path" name="file_path" required><br><br>
+        <button type="submit">Start Server</button>
+    </form>
+</body>
+</html>
