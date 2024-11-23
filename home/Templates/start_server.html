@@ -3,112 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>File Sender</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f7f9fb;
+            color: #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            box-sizing: border-box;
         }
 
         h1 {
-            text-align: center;
-            margin-top: 20px;
-            color: #333;
-        }
-
-        p {
-            text-align: center;
-            font-size: 16px;
-            color: #555;
-        }
-
-        form {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 24px;
+            color: #4a90e2;
+            margin-bottom: 20px;
+            font-weight: 600;
         }
 
         label {
             font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+            text-align: left;
             color: #555;
         }
 
-        input[type="text"] {
-            width: calc(100% - 20px);
-            padding: 8px 10px;
-            margin: 10px 0;
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #fafafa;
+            color: #333;
             font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="file"]:focus {
+            border-color: #4a90e2;
+            outline: none;
         }
 
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
+            background-color: #4a90e2;
+            color: white;
             font-size: 16px;
-            background-color: #007bff;
-            color: #fff;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #357ab7;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            background-color: #306f99;
+            transform: translateY(0);
         }
 
         .message {
-            text-align: center;
             font-size: 14px;
-            color: #28a745;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 500;
         }
 
-        .error {
+        .error-message {
             color: #d9534f;
         }
-    </style>
-    <script>
-        function validateForm() {
-            const filePath = document.getElementById("file_path").value;
-            if (filePath.trim() === "") {
-                alert("Please enter a valid file path.");
-                return false;
-            }
-            return true;
-        }
 
-        function redirectToHome() {
-            setTimeout(() => {
-                window.location.href = "/";
-            }, 3000);
+        .success-message {
+            color: #28a745;
         }
-    </script>
+    </style>
 </head>
 <body>
-    <h1>File Sender</h1>
-    <p>Your server's IP address is: <strong>{{ server_ip }}</strong></p>
-
-    {% if message %}
-        <div class="message">
-            {{ message }}
-        </div>
-        <script>
-            redirectToHome();
-        </script>
-    {% else %}
-        <form method="post" onsubmit="return validateForm()">
+    <div class="container">
+        <h1>File Sender</h1>
+        <form method="POST" enctype="multipart/form-data" action="{% url 'start_server' %}">
             {% csrf_token %}
-            <label for="file_path">Enter the path of the file to send:</label><br>
-            <input type="text" id="file_path" name="file_path" placeholder="e.g., C:/path/to/file.txt" required><br>
+            <label for="file">Select the file to send:</label>
+            <input type="file" id="file" name="file" required>
             <button type="submit">Start Server</button>
         </form>
-    {% endif %}
+
+        <div class="message error-message">
+            {% if error %}
+                <p>{{ error }}</p>
+            {% endif %}
+        </div>
+
+        <div class="message success-message">
+            {% if success %}
+                <p>{{ success }}</p>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>

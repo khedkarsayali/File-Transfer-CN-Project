@@ -1,12 +1,11 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, StreamingHttpResponse
-import threading
 import socket
 import os
 import logging
-import time
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def get_local_ip():
     try:
@@ -15,6 +14,7 @@ def get_local_ip():
         logging.error(f"Error getting local IP: {e}")
         return "127.0.0.1"
 
+
 def is_valid_ip(ip):
     try:
         socket.inet_aton(ip)
@@ -22,20 +22,26 @@ def is_valid_ip(ip):
     except socket.error:
         return False
 
+
 def home(request):
     return render(request, 'home.html')
 
+
 def start_server(request):
     server_ip = get_local_ip()
-    
+
     if request.method == "POST":
-        file_path = request.POST.get("file_path")
-        if not file_path:
-            return HttpResponse("No file path provided.", status=400)
-        
-        file_path = os.path.abspath(file_path)
-        if not os.path.exists(file_path):
-            return HttpResponse("File not found. Please provide a valid file path.", status=404)
+        uploaded_file = request.FILES.get("file")
+        if not uploaded_file:
+            return HttpResponse("No file provided. Please upload a valid file.", status=400)
+
+        # Save the uploaded file temporarily
+        file_path = os.path.join("uploads", uploaded_file.name)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        with open(file_path, "wb") as f:
+            for chunk in uploaded_file.chunks():
+                f.write(chunk)
 
         def stream_file_sending():
             try:
@@ -45,11 +51,15 @@ def start_server(request):
             except Exception as e:
                 logging.error(f"Server error: {e}")
                 yield f"<h2>Error occurred: {str(e)}</h2>"
+            finally:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
             yield "<script>window.location.href='/'</script>"
 
         return StreamingHttpResponse(stream_file_sending(), content_type="text/html")
-    
+
     return render(request, 'start_server.html', {'server_ip': server_ip})
+
 
 def start_client(request):
     if request.method == "POST":
@@ -66,15 +76,15 @@ def start_client(request):
                     yield "<h2>File received successfully!</h2>"
                 else:
                     yield f"<h2>Error: {result['message']}</h2>"
-                time.sleep(1)
             except Exception as e:
                 logging.error(f"Client error: {e}")
                 yield f"<h2>Error occurred: {str(e)}</h2>"
             yield "<script>window.location.href='/'</script>"
 
         return StreamingHttpResponse(stream_file_reception(), content_type="text/html")
-    
+
     return render(request, 'start_client.html')
+
 
 def run_server(file_path, server_ip):
     try:
@@ -87,21 +97,28 @@ def run_server(file_path, server_ip):
             s.bind((server_ip, port))
             s.listen(1)
             logging.info(f"Server listening on {server_ip}:{port}")
-            
+
             conn, addr = s.accept()
             logging.info(f"Connected to client: {addr}")
-            
+
             file_name = os.path.basename(file_path)
             file_size = os.path.getsize(file_path)
+            logging.debug(f"Sending file: {file_name} of size {file_size} bytes")
             conn.sendall(f"{file_name}|{file_size}\n".encode())
 
             with open(file_path, 'rb') as f:
                 while (chunk := f.read(1024)):
+                    logging.debug(f"Sending chunk of size {len(chunk)} bytes")
                     conn.sendall(chunk)
 
             logging.info("File sent successfully.")
+    except FileNotFoundError as e:
+        logging.error(f"File error: {e}")
+        raise
     except Exception as e:
         logging.error(f"Server error: {e}")
+        raise
+
 
 def run_client(server_ip, result):
     try:
@@ -121,11 +138,12 @@ def run_client(server_ip, result):
             try:
                 file_name, file_size = metadata.split("|")
                 file_size = int(file_size)
+                logging.debug(f"Receiving file: {file_name} with expected size {file_size} bytes")
             except ValueError:
                 raise ValueError("Invalid metadata format received.")
 
             save_path = os.path.join(save_dir, file_name)
-            logging.info(f"Receiving file: {file_name} ({file_size} bytes)")
+            logging.debug(f"Saving file to {save_path}")
 
             with open(save_path, 'wb') as f:
                 total_received = 0
@@ -135,6 +153,7 @@ def run_client(server_ip, result):
                         break
                     f.write(data)
                     total_received += len(data)
+                    logging.debug(f"Received chunk of size {len(data)} bytes")
 
             if total_received == file_size:
                 result["success"] = True
