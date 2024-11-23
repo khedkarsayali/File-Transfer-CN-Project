@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>HomePage</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 40px;
+            color: #333;
+            font-size: 36px;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            text-align: center;
+            padding: 30px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        p {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            font-size: 18px;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            width: 150px;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        .button:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .button.send {
+            background-color: #28a745;
+        }
+
+        .button.send:hover {
+            background-color: #218838;
+        }
+
+        .button.receive {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .button.receive:hover {
+            background-color: #e0a800;
+        }
+
+        .file-icons {
+            font-size: 48px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 100px;
+        }
+
+        .file-icons a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .file-icons i {
+            padding: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .file-icons i:hover {
+            transform: scale(1.2);
+        }
+
+        .upload-icon {
+            color: #28a745;
+        }
+
+        .download-icon {
+            color: #ffc107;
+        }
+
+        .container {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>File Transfer</h1>
+    </header>
+
+    <main class="container">
+        <p>Choose an option to proceed:</p>
+
+        <div class="file-icons" role="group" aria-label="File Transfer Actions">
+            <a href="{% url 'start_server' %}" title="Upload File">
+                <i class="fas fa-upload upload-icon" aria-label="Upload File"></i>
+            </a>
+            <a href="{% url 'start_client' %}" title="Download File">
+                <i class="fas fa-download download-icon" aria-label="Download File"></i>
+            </a>
+        </div>
+
+        <div class="buttons">
+            <a href="{% url 'start_server' %}" class="button send" aria-label="Send a file">Send a File</a>
+            <a href="{% url 'start_client' %}" class="button receive" aria-label="Receive a file">Receive a File</a>
+        </div>
+    </main>
+
+    <footer>
+        <p style="text-align: center; color: #777; font-size: 14px;">© 2024 File Transfer</p>
+    </footer>
+</body>
+</html>

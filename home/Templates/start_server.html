@@ -3,16 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Start File Server</title>
+    <title>File Sender</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        p {
+            text-align: center;
+            font-size: 16px;
+            color: #555;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-size: 14px;
+            color: #555;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 8px 10px;
+            margin: 10px 0;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            text-align: center;
+            font-size: 14px;
+            color: #28a745;
+        }
+
+        .error {
+            color: #d9534f;
+        }
+    </style>
+    <script>
+        function validateForm() {
+            const filePath = document.getElementById("file_path").value;
+            if (filePath.trim() === "") {
+                alert("Please enter a valid file path.");
+                return false;
+            }
+            return true;
+        }
+
+        function redirectToHome() {
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 3000);
+        }
+    </script>
 </head>
 <body>
-    <h1>Start File Server</h1>
+    <h1>File Sender</h1>
     <p>Your server's IP address is: <strong>{{ server_ip }}</strong></p>
-    <form method="post">
-        {% csrf_token %}
-        <label for="file_path">Enter the path of the file to send:</label><br>
-        <input type="text" id="file_path" name="file_path" required><br><br>
-        <button type="submit">Start Server</button>
-    </form>
+
+    {% if message %}
+        <div class="message">
+            {{ message }}
+        </div>
+        <script>
+            redirectToHome();
+        </script>
+    {% else %}
+        <form method="post" onsubmit="return validateForm()">
+            {% csrf_token %}
+            <label for="file_path">Enter the path of the file to send:</label><br>
+            <input type="text" id="file_path" name="file_path" placeholder="e.g., C:/path/to/file.txt" required><br>
+            <button type="submit">Start Server</button>
+        </form>
+    {% endif %}
 </body>
 </html>
