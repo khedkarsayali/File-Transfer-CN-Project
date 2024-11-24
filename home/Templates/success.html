@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f7f7f7;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 24px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .success-image {
+            width: 100px;
+            height: 100px;
+            margin: 20px 0;
+        }
+        .message {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Success!</h1>
+        
+        {% if action == 'sent' %}
+            <img src="{% static 'images/success.png' %}" alt="File Sent" class="success-image">
+            <p class="message">Your file has been successfully sent!</p>
+        {% elif action == 'received' %}
+            <img src="{% static 'images/success.png' %}" alt="File Received" class="success-image">
+            <p class="message">Your file has been successfully received!</p>
+        {% endif %}
+        
+        <a href="/">Go Back to Home</a>
+    </div>
+</body>
+</html>

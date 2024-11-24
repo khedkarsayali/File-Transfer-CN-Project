@@ -1,12 +1,13 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, StreamingHttpResponse
-import socket
 import os
 import logging
+import socket
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, StreamingHttpResponse
+from django.conf import settings
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
+# Helper function to get local IP
 def get_local_ip():
     try:
         return socket.gethostbyname(socket.gethostname())
@@ -15,6 +16,7 @@ def get_local_ip():
         return "127.0.0.1"
 
 
+# Helper function to validate IP address
 def is_valid_ip(ip):
     try:
         socket.inet_aton(ip)
@@ -23,12 +25,14 @@ def is_valid_ip(ip):
         return False
 
 
+# Home view
 def home(request):
     return render(request, 'home.html')
 
 
+# Start server view
 def start_server(request):
-    server_ip = get_local_ip()
+    server_ip = get_local_ip()  # Get the server's local IP address
 
     if request.method == "POST":
         uploaded_file = request.FILES.get("file")
@@ -36,7 +40,7 @@ def start_server(request):
             return HttpResponse("No file provided. Please upload a valid file.", status=400)
 
         # Save the uploaded file temporarily
-        file_path = os.path.join("uploads", uploaded_file.name)
+        file_path = os.path.join(settings.MEDIA_ROOT, "uploads", uploaded_file.name)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         with open(file_path, "wb") as f:
@@ -46,46 +50,51 @@ def start_server(request):
         def stream_file_sending():
             try:
                 yield "<h2>Preparing to send the file...</h2>"
-                run_server(file_path, server_ip)
+                run_server(file_path, server_ip)  # Function to send the file
                 yield "<h2>File sent successfully!</h2>"
+                yield "<script>window.location.href='/success/sent'</script>"
             except Exception as e:
                 logging.error(f"Server error: {e}")
                 yield f"<h2>Error occurred: {str(e)}</h2>"
+                yield "<script>window.location.href='/success/sent'</script>"
             finally:
                 if os.path.exists(file_path):
-                    os.remove(file_path)
-            yield "<script>window.location.href='/'</script>"
+                    os.remove(file_path)  # Clean up the temporary file after sending
 
         return StreamingHttpResponse(stream_file_sending(), content_type="text/html")
 
     return render(request, 'start_server.html', {'server_ip': server_ip})
 
 
+# Start client view
 def start_client(request):
     if request.method == "POST":
         receiver_ip = request.POST.get("receiver_ip")
+        
         if not is_valid_ip(receiver_ip):
             return HttpResponse("Invalid IP address provided.", status=400)
-
+        
         result = {"success": False, "message": ""}
 
         def stream_file_reception():
             try:
-                run_client(receiver_ip, result)
+                run_client(receiver_ip, result)  # Your client-side function to start receiving the file
                 if result["success"]:
-                    yield "<h2>File received successfully!</h2>"
+                    yield "<script>window.location.href='/success/received'</script>"
                 else:
                     yield f"<h2>Error: {result['message']}</h2>"
             except Exception as e:
                 logging.error(f"Client error: {e}")
                 yield f"<h2>Error occurred: {str(e)}</h2>"
-            yield "<script>window.location.href='/'</script>"
+            finally:
+                yield "<script>window.location.href='/success/received'</script>"
 
         return StreamingHttpResponse(stream_file_reception(), content_type="text/html")
 
     return render(request, 'start_client.html')
 
 
+# Run server function to send the file
 def run_server(file_path, server_ip):
     try:
         file_path = os.path.abspath(file_path)
@@ -120,10 +129,11 @@ def run_server(file_path, server_ip):
         raise
 
 
+# Run client function to receive the file
 def run_client(server_ip, result):
     try:
         port = 12345
-        save_dir = os.path.join(os.getcwd(), "uploaded_files")
+        save_dir = os.path.join(settings.MEDIA_ROOT, "uploaded_files")
         os.makedirs(save_dir, exist_ok=True)
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -165,3 +175,8 @@ def run_client(server_ip, result):
         result["success"] = False
         result["message"] = str(e)
         logging.error(f"Client error: {e}")
+
+
+# Success view for sending or receiving files
+def success(request, action):
+    return render(request, 'success.html', {'action': action})
