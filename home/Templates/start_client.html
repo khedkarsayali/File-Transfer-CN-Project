@@ -144,10 +144,13 @@
             <input type="text" id="receiver_ip" name="receiver_ip" placeholder="e.g., 192.168.1.1" required>
             
             <div id="ip-error" class="error"></div> 
-
-            <button type="submit">Start Client</button>
+    
+            <button type="submit" id="connect-button">Connect to sender</button>
         </form>
-
+    
+        <!-- Dynamic status messages -->
+        <div id="status-message" style="margin-top: 20px; font-size: 16px; color: #4a90e2;"></div>
+    
         {% if message %}
             <div class="message">{{ message }}</div>
         {% endif %}
@@ -156,5 +159,34 @@
             <div class="error show">{{ error }}</div>
         {% endif %}
     </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.querySelector("form");
+            const statusMessage = document.getElementById("status-message");
+            const connectButton = document.getElementById("connect-button");
+    
+            // Function to update status dynamically
+            function updateStatus(message, disableButton = false) {
+                statusMessage.textContent = message;
+                if (disableButton) {
+                    connectButton.disabled = true;
+                    connectButton.style.backgroundColor = "#ccc";
+                    connectButton.style.cursor = "not-allowed";
+                }
+            }
+    
+            // Intercept form submission to dynamically update status
+            form.addEventListener("submit", () => {
+                updateStatus("Connecting to sender...", true);
+                
+                // Simulate updating status after connection
+                setTimeout(() => {
+                    updateStatus("Connection established, receiving file...", true);
+                }, 2000); // Adjust timing as needed based on server response time
+            });
+        });
+    </script>
+    
 </body>
 </html>
