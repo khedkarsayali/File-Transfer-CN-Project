@@ -82,12 +82,12 @@ def start_client(request):
                 if result["success"]:
                     yield "<script>window.location.href='/success/received'</script>"
                 else:
-                    yield f"<h2>Error: {result['message']}</h2>"
+                    # Show a pop-up for failure and redirect to the home page
+                    yield f"<script>alert('No connection available for IP address: {receiver_ip}'); window.location.href='/';</script>"
             except Exception as e:
                 logging.error(f"Client error: {e}")
-                yield f"<h2>Error occurred: {str(e)}</h2>"
-            finally:
-                yield "<script>window.location.href='/success/received'</script>"
+                # Show a pop-up for the exception and redirect to the home page
+                yield f"<script>alert('Error occurred: {str(e)}'); window.location.href='/';</script>"
 
         return StreamingHttpResponse(stream_file_reception(), content_type="text/html")
 
