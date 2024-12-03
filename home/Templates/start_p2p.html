@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Receiver</title>
+    <style>
+        /* Styles remain the same as your provided code */
+        .progress-container {
+            margin-top: 20px;
+            width: 100%;
+            background-color: #f3f3f3;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0;
+            height: 20px;
+            background-color: #4a90e2;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            margin-top: 10px;
+            color: #555;
+        }
+    </style>
+    <script>
+        function validateForm() {
+            const receiverIp = document.getElementById("receiver_ip").value;
+            const ipPattern = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
+            const errorMessage = document.getElementById("ip-error");
+
+            if (!ipPattern.test(receiverIp)) {
+                errorMessage.textContent = "Please enter a valid IP address.";
+                errorMessage.classList.add("show");
+                return false;
+            } else {
+                errorMessage.textContent = "";
+                errorMessage.classList.remove("show");
+                return true;
+            }
+        }
+
+        function simulateFileTransfer() {
+            const progressBar = document.querySelector('.progress-bar');
+            const progressText = document.querySelector('.progress-text');
+            let percentage = 0;
+
+            const interval = setInterval(() => {
+                percentage += 5; // Increment by 5% every interval
+                if (percentage <= 100) {
+                    progressBar.style.width = percentage + '%';
+                    progressText.textContent = `File received: ${percentage}%`;
+                }
+                if (percentage >= 100) {
+                    clearInterval(interval);
+                    progressText.textContent = "File transfer completed!";
+                }
+            }, 200); // Simulate file receiving every 200ms
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>File Receiver</h1>
+        <form method="POST" onsubmit="return validateForm()">
+            {% csrf_token %}
+            <label for="receiver_ip">Enter the sender's IP address:</label>
+            <input type="text" id="receiver_ip" name="receiver_ip" placeholder="e.g., 192.168.1.1" required>
+            
+            <div id="ip-error" class="error">Please enter a valid IP address.</div>
+
+            <button type="submit" onclick="simulateFileTransfer()">Connect & Receive</button>
+        </form>
+
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        <div class="progress-text">File received: 0%</div>
+    </div>
+</body>
+</html>

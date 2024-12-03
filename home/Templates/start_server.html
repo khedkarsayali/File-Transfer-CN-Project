@@ -60,6 +60,7 @@
             color: #333;
             font-size: 14px;
             transition: border-color 0.3s ease;
+            display: none;
         }
 
         input[type="file"]:focus {
@@ -103,6 +104,28 @@
         .success-message {
             color: #28a745;
         }
+
+        /* Drag-and-Drop Zone */
+        .drag-drop-area {
+            width: 100%;
+            padding: 20px;
+            border: 1px dashed #252525;
+            border-radius: 8px;
+            background-color: #f0f9ff;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .drag-drop-area.hover {
+            background-color: #e1f1fe;
+        }
+
+        .drag-drop-area p {
+            margin: 0;
+            color: #292828;
+            font-size: 12px;
+            font-weight: 300;
+        }
     </style>
 </head>
 <body>
@@ -110,7 +133,11 @@
         <h1>File Sender</h1>
         <form method="POST" enctype="multipart/form-data" action="{% url 'start_server' %}">
             {% csrf_token %}
-            <label for="file">Select the file to send:</label>
+            
+            <div class="drag-drop-area" id="drop-zone">
+                <p> Drag and drop a file here or click to select one</p>
+            </div>
+            
             <input type="file" id="file" name="file" required>
             <button type="submit">Send file</button>
         </form>
@@ -131,5 +158,52 @@
             <p>Server IP Address: <strong>{{ server_ip }}</strong></p>
         </div>
     </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file');
+
+        // Show hover effect on drag over
+        dropZone.addEventListener('dragover', (event) => {
+            event.preventDefault();  // Prevent default behavior (opens file in browser)
+            dropZone.classList.add('hover');  // Add hover effect
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('hover');  // Remove hover effect when leaving
+        });
+
+        // Handle the file drop
+        dropZone.addEventListener('drop', (event) => {
+            event.preventDefault();  // Prevent default behavior
+            dropZone.classList.remove('hover');  // Remove hover effect after drop
+            
+            const files = event.dataTransfer.files;  // Get the dropped files
+            if (files.length > 0) {
+                fileInput.files = files;  // Assign the dropped files to the file input
+                updateDropZoneText(files[0].name);  // Update drop zone text to show file name
+            }
+        });
+
+        // Handle click on the drop zone
+        dropZone.addEventListener('click', () => {
+            fileInput.click();  // Open file input dialog
+        });
+
+        // When file is selected via file dialog, show it in the drop zone
+        fileInput.addEventListener('change', () => {
+            const fileName = fileInput.files[0]?.name || '';
+            updateDropZoneText(fileName);
+        });
+
+        // Function to update the drop zone text
+        function updateDropZoneText(fileName) {
+            if (fileName) {
+                dropZone.innerHTML = `<p>${fileName}</p>`;
+            } else {
+                dropZone.innerHTML = `<p>Drag and drop a file here or click to select one</p>`;
+            }
+        }
+    </script>
 </body>
 </html>
